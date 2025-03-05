@@ -92,6 +92,12 @@ def train(
         "cuda:0" if torch.cuda.is_available() else "cpu"
     ),
 ):
+    # Mean and STD values calculated this way:
+    # Stack all images into a single tensor
+    # imgs = torch.stack([img for img, _ in dataset])  # Shape: (50000, 3, 32, 32)
+    # Compute mean and std
+    # mean = imgs.mean(dim=[0, 2, 3])  # Mean over (batch, height, width)
+    # std = imgs.std(dim=[0, 2, 3])    # Std over (batch, height, width)
     transform_train = transforms.Compose(
         [
             transforms.RandomHorizontalFlip(),
@@ -116,8 +122,8 @@ def train(
         root="./datasets/", train=True, download=True, transform=transform_train
     )
 
-    train_size = int(0.8 * len(dataset_train))  # 80% treino
-    val_size = len(dataset_train) - train_size  # 20% validação
+    train_size = int(0.8 * len(dataset_train))  # 80% train
+    val_size = len(dataset_train) - train_size  # 20% validation
     dataset_train, dataset_val = random_split(dataset_train, [train_size, val_size])
 
     dataset_test = datasets.CIFAR10(
