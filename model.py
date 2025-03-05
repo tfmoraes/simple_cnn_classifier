@@ -17,7 +17,7 @@ class SimpleCNN(nn.Module):
         self.elu = nn.ELU()
         # self.dropout = nn.Dropout(0.3)  # Pode testar valores entre 0.2 e 0.5
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.elu(self.bn1(self.conv1(x)))
         # x = self.pool(x)
         x = self.elu(self.bn2(self.conv2(x)))

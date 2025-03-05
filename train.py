@@ -1,16 +1,19 @@
 import argparse
 import datetime
+from typing import Callable
 
 import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
-from torchmetrics import Accuracy
+from torchmetrics import Accuracy, Metric
 from torchvision import datasets, transforms
 from tqdm import tqdm, trange
 
 from model import SimpleCNN
+
+LossFunctionType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -38,7 +41,7 @@ parser.add_argument(
 args, _ = parser.parse_known_args()
 
 
-def _train(dataloader, model, loss_fn, metrics_fn, optimizer, device):
+def _train(dataloader: DataLoader, model: nn.Module, loss_fn: LossFunctionType, metrics_fn: Metric, optimizer: optim.Optimizer ,device: torch.device):
     model.train()
     num_batches = len(dataloader)
     train_loss = 0.0
@@ -62,7 +65,7 @@ def _train(dataloader, model, loss_fn, metrics_fn, optimizer, device):
     return avg_train_loss, avg_train_accuracy
 
 
-def _evaluate(dataloader, model, loss_fn, metrics_fn, device):
+def _evaluate(dataloader: DataLoader, model: nn.Module, loss_fn: LossFunctionType, metrics_fn: Metric, device: torch.device):
     model.eval()
     num_batches = len(dataloader)
     validation_loss = 0.0
