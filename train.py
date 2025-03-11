@@ -6,7 +6,7 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau
 from torch.utils.data import DataLoader, random_split
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard.writer import SummaryWriter
 from torchmetrics import Accuracy, Metric
 from torchvision import datasets, transforms
 from tqdm import tqdm, trange
@@ -41,7 +41,14 @@ parser.add_argument(
 args, _ = parser.parse_known_args()
 
 
-def _train(dataloader: DataLoader, model: nn.Module, loss_fn: LossFunctionType, metrics_fn: Metric, optimizer: optim.Optimizer ,device: torch.device):
+def _train(
+    dataloader: DataLoader,
+    model: nn.Module,
+    loss_fn: LossFunctionType,
+    metrics_fn: Metric,
+    optimizer: optim.Optimizer,
+    device: torch.device,
+):
     model.train()
     num_batches = len(dataloader)
     train_loss = 0.0
@@ -65,7 +72,13 @@ def _train(dataloader: DataLoader, model: nn.Module, loss_fn: LossFunctionType, 
     return avg_train_loss, avg_train_accuracy
 
 
-def _evaluate(dataloader: DataLoader, model: nn.Module, loss_fn: LossFunctionType, metrics_fn: Metric, device: torch.device):
+def _evaluate(
+    dataloader: DataLoader,
+    model: nn.Module,
+    loss_fn: LossFunctionType,
+    metrics_fn: Metric,
+    device: torch.device,
+):
     model.eval()
     num_batches = len(dataloader)
     validation_loss = 0.0
@@ -137,12 +150,8 @@ def train(
     model = SimpleCNN()
     model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(
-        model.parameters(),
-        lr=learning_rate,
-        weight_decay=1e-4
-    )
-    scheduler = ReduceLROnPlateau(optimizer, 'max', patience=3)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+    scheduler = ReduceLROnPlateau(optimizer, "max", patience=3)
 
     metric_fn = Accuracy(task="multiclass", num_classes=10).to(device)
 
@@ -157,7 +166,7 @@ def train(
         avg_val_loss, avg_val_accuracy = _evaluate(
             loader_validation, model, criterion, metric_fn, device
         )
-        scheduler.step(avg_val_accuracy)
+        scheduler.step(avg_val_accuracy, epoch)
 
         writer.add_scalar("Training loss", avg_train_loss, epoch)
         writer.add_scalar("Training accuracy", avg_train_accuracy, epoch)
